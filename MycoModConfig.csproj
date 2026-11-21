@@ -1,0 +1,118 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Condition="Exists('LocalPaths.props')" Project="LocalPaths.props" />
+
+    <Target Name="WarnMissingLocalPaths" BeforeTargets="BeforeBuild" Condition="!Exists('LocalPaths.props') And '$(CI)' != 'true'">
+        <Warning Text="LocalPaths.props not found. Copy LocalPaths.props.example, set your game and mod profile paths, and build again." />
+    </Target>
+
+    <PropertyGroup>
+        <Product>MycoModConfig</Product>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <AssemblyName>dev.funlennysub.MycoModConfig</AssemblyName>
+
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+            https://nuget.samboy.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+        <RootNamespace>MycoModConfig</RootNamespace>
+
+        <GameVersion>2</GameVersion>
+        <!-- Git tags must strart with v -->
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+
+        <!-- $(GameDir) and $(PluginDir) come from the gitignored LocalPaths.props. -->
+        <BaseAssemblyDir>$(GameDir)/Mycopunk_Data/Managed</BaseAssemblyDir>
+    </PropertyGroup>
+
+    <!-- Set BepInEx plugin version according to MinVer -->
+    <Target Name="SetModVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
+        <PropertyGroup>
+            <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
+            <BepInExPluginVersion>$(PlainVersion)</BepInExPluginVersion>
+        </PropertyGroup>
+    </Target>
+
+    <ItemGroup>
+        <ProjectReference Include="../MycoMenuLib/MycoMenuLib.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
+        <PackageReference Include="UnityEngine.Modules" Version="6000.4.0" IncludeAssets="compile"/>
+        <PackageReference Include="MonoDetour.HookGen" Version="0.7" PrivateAssets="all" />
+        <PackageReference Include="MonoDetour" Version="[*,2.0)"/> <!-- Highest version below 2.0 -->
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <PackageReference Include="MinVer" Version="6.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <!-- Only keep mod dll -->
+    <Target Name="ClearReferenceCopyLocalPaths" AfterTargets="ResolveAssemblyReferences">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"/>
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="$(CI) == 'true'">
+        <!-- Download latest version for set game version -->
+        <PackageReference Include="Mycopunk.GameLibs.Steam" Version="$(GameVersion)-*" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <!-- Build the plugin for Thunderstore publication -->
+    <!-- The command will create a zip file in the target directory using the thunderstore.toml file -->
+    <Target Condition="'$(BuildThunderstorePackage)' == 'true'" Name="ThunderstoreBuild" AfterTargets="PostBuildEvent" DependsOnTargets="MinVer">
+        <PropertyGroup>
+            <PluginVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PluginVersion>
+        </PropertyGroup>
+        <!-- https://github.com/thunderstore-io/thunderstore-cli/wiki -->
+        <Exec Command="tcli build --config-path $(SolutionDir)thunderstore.toml --package-version $(PluginVersion)"/>
+    </Target>
+
+    <!-- Copy the mod dll into the game's BepInEx plugins folder after building -->
+    <Target Name="CopyToPlugins" AfterTargets="Build" Condition="Exists('$(PluginDir)')">
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginDir)" SkipUnchangedFiles="true"/>
+    </Target>
+
+    <ItemGroup Condition="$(CI) != 'true'">
+        <Reference Include="Assembly-CSharp" Publicize="true">
+            <HintPath>$(BaseAssemblyDir)/Assembly-CSharp.dll</HintPath>
+        </Reference>
+
+        <Reference Include="Unity.InputSystem" Publicize="true">
+            <HintPath>$(BaseAssemblyDir)/Unity.InputSystem.dll</HintPath>
+        </Reference>
+
+        <Reference Include="Unity.TextMeshPro">
+            <HintPath>$(BaseAssemblyDir)/Unity.TextMeshPro.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>$(BaseAssemblyDir)/UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.RenderPipelines.Core.Runtime">
+            <HintPath>$(BaseAssemblyDir)/Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+            <HintPath>$(BaseAssemblyDir)/Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Netcode.Runtime">
+            <HintPath>$(BaseAssemblyDir)/Unity.Netcode.Runtime.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

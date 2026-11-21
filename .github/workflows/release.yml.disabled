@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Init
+        uses: ./.github/actions/init
+
+      - name: Build
+        run: dotnet build -c Release
+        env:
+          BuildThunderstorePackage: true
+
+#      - name: Publish to Thunderstore
+#        run: tcli --token 

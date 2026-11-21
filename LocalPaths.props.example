@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <GameDir>C:/Program Files (x86)/Steam/steamapps/common/Mycopunk</GameDir>
+        <PluginDir>%AppData%/r2modmanPlus-local/Mycopunk/profiles/Default/BepInEx/plugins</PluginDir>
+    </PropertyGroup>
+</Project>
