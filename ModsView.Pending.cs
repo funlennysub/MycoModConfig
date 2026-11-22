@@ -11,8 +11,8 @@ public sealed partial class ModsView
     private void UpdateActionButtons()
     {
         var hasPending = HasPending;
-        SetActionButtonEnabled(_saveAction, hasPending);
-        SetActionButtonEnabled(_revertAction, hasPending);
+        SetActionButtonEnabled(_saveAction, hasPending, ModAccents.Save);
+        SetActionButtonEnabled(_revertAction, hasPending, ModAccents.Warning);
     }
 
     internal void RegisterRevertButton(ConfigEntryBase entry, GameObject button)

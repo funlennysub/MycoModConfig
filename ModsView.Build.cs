@@ -11,7 +11,7 @@ public sealed partial class ModsView
     private void BuildStrip()
     {
         var strip = new GameObject("ModStrip",
-            typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+            typeof(RectTransform), typeof(Image), typeof(StripScrollRect));
 
         var rt = (RectTransform)strip.transform;
         rt.SetParent(_section, false);
@@ -92,7 +92,7 @@ public sealed partial class ModsView
         rt.anchorMax = new Vector2(1f, 0f);
         rt.pivot = new Vector2(0.5f, 0f);
         rt.anchoredPosition = new Vector2(0f, 6f);
-        rt.sizeDelta = new Vector2(-16f, 4f);
+        rt.sizeDelta = new Vector2(-16f, 6f);
 
         var track = barGo.GetComponent<Image>();
         track.color = new Color(0.18f, 0.18f, 0.18f, 0.9f);
@@ -146,19 +146,19 @@ public sealed partial class ModsView
         background.color = Color.clear;
         background.raycastTarget = false;
 
-        _saveAction = MakeActionButton(rt, "SAVE", 90f, -8f);
+        _saveAction = MakeActionButton(rt, "SAVE", 90f, -8f, ModAccents.Save);
         _saveAction.OnClickUp.AddListener(SavePending);
 
-        _revertAction = MakeActionButton(rt, "REVERT", 110f, -104f);
+        _revertAction = MakeActionButton(rt, "REVERT", 110f, -104f, ModAccents.Warning);
         _revertAction.OnClickUp.AddListener(() => DiscardPending());
 
-        var reset = MakeActionButton(rt, "RESET DEFAULTS", 180f, -220f);
+        var reset = MakeActionButton(rt, "RESET DEFAULTS", 180f, -220f, ModAccents.Danger);
         reset.OnClickUp.AddListener(ConfirmResetDefaults);
 
         UpdateActionButtons();
     }
 
-    private static void SetActionButtonEnabled(DefaultButton button, bool enabled)
+    private static void SetActionButtonEnabled(DefaultButton button, bool enabled, Color accent)
     {
         if (button == null) return;
 
@@ -170,7 +170,7 @@ public sealed partial class ModsView
 
         button.SetDefaultColor(fill);
         button.SetHoverColor(enabled
-            ? new Color(0.18f, 0.18f, 0.18f, 1f)
+            ? ModAccents.Hover(accent)
             : new Color(0.04f, 0.04f, 0.04f, 1f));
         button.SetSecondaryColor(enabled
             ? Color.white
@@ -179,13 +179,10 @@ public sealed partial class ModsView
         if (button.MainGraphic != null)
             button.MainGraphic.color = fill;
 
-        if (button.GetComponent<BevelRectOutline>() is { } outline)
-            outline.color = enabled
-                ? Color.white
-                : new Color(1f, 1f, 1f, 0.25f);
+        ModAccents.Apply(button.gameObject, accent, enabled);
     }
 
-    private static DefaultButton MakeActionButton(RectTransform parent, string label, float width, float x)
+    private static DefaultButton MakeActionButton(RectTransform parent, string label, float width, float x, Color accent)
     {
         var button = Instantiate(
             ModResources.Instance.NormalButton, parent, false);
@@ -209,7 +206,8 @@ public sealed partial class ModsView
 
         SetCardCorners(button);
         button.SetDefaultColor(new Color(0.09f, 0.09f, 0.09f, 1f));
-        button.SetHoverColor(new Color(0.18f, 0.18f, 0.18f, 1f));
+        button.SetHoverColor(ModAccents.Hover(accent));
+        ModAccents.Apply(button.gameObject, accent);
         return button;
     }
 

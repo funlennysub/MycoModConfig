@@ -5,8 +5,8 @@ Adds a Mods tab to the settings menu with every mod's config.
 ## Requirements
 
 - [BepInEx 5](https://thunderstore.io/c/mycopunk/p/BepInEx/BepInExPack_Mycopunk/)
-- [MycoMenuLib](https://thunderstore.io/c/mycopunk/p/funlennysub/MycoMenuLib/) — required; it is a hard dependency, so mod managers install it for you. Manual installs need `dev.funlennysub.MycoMenuLib.dll` in `BepInEx/plugins`.
-- [MonoDetour](https://thunderstore.io/c/mycopunk/p/MonoDetour/MonoDetour_BepInEx_5/) — required; also handled by mod managers.
+- [MycoMenuLib](https://thunderstore.io/c/mycopunk/p/funlennysub/MycoMenuLib/)
+- [MonoDetour](https://thunderstore.io/c/mycopunk/p/MonoDetour/MonoDetour_BepInEx_5/)
 
 ## Features
 

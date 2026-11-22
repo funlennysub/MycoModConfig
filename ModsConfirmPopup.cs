@@ -77,14 +77,14 @@ public sealed class ModsConfirmPopup : MonoBehaviour
         if (transform.Find("Timer") is { } timer)
             timer.gameObject.SetActive(false);
 
-        _saveButton = ConfigureButton(transform.Find("Y"), "SAVE", -260f);
-        _discardButton = ConfigureButton(transform.Find("N"), "DISCARD", 0f);
+        _saveButton = ConfigureButton(transform.Find("Y"), "SAVE", -260f, ModAccents.Save);
+        _discardButton = ConfigureButton(transform.Find("N"), "DISCARD", 0f, ModAccents.Danger);
 
         if (_discardButton != null)
         {
             var cancel = Instantiate(_discardButton, transform, false);
             cancel.gameObject.name = "CANCEL";
-            _cancelButton = ConfigureButton(cancel.transform, "CANCEL", 260f);
+            _cancelButton = ConfigureButton(cancel.transform, "CANCEL", 260f, Color.white);
         }
 
         if (_saveButton != null) _saveButton.OnClickUp.AddListener(() => Choose(_onSave));
@@ -92,7 +92,7 @@ public sealed class ModsConfirmPopup : MonoBehaviour
         if (_cancelButton != null) _cancelButton.OnClickUp.AddListener(() => Choose(_onCancel));
     }
 
-    private static DefaultButton ConfigureButton(Transform buttonTransform, string label, float x)
+    private static DefaultButton ConfigureButton(Transform buttonTransform, string label, float x, Color accent)
     {
         if (buttonTransform == null) return null;
 
@@ -113,10 +113,11 @@ public sealed class ModsConfirmPopup : MonoBehaviour
         {
             text.text = label;
             text.alignment = TextAlignmentOptions.Center;
-            text.fontSize = 18f;
+            text.fontSize = 21f;
             text.raycastTarget = false;
         }
 
+        ModAccents.Apply(button.gameObject, accent);
         return button;
     }
 
@@ -143,6 +144,10 @@ public sealed class ModsConfirmPopup : MonoBehaviour
         SetButtonLabel(_discardButton, "DISCARD");
         SetButtonLabel(_cancelButton, "CANCEL");
 
+        SetAccent(_saveButton, ModAccents.Save);
+        SetAccent(_discardButton, ModAccents.Danger);
+        SetAccent(_cancelButton, Color.white);
+
         if (_saveButton != null) _saveButton.gameObject.SetActive(true);
         if (_discardButton != null) _discardButton.gameObject.SetActive(true);
         if (_cancelButton != null) _cancelButton.gameObject.SetActive(true);
@@ -158,6 +163,9 @@ public sealed class ModsConfirmPopup : MonoBehaviour
 
         SetButtonLabel(_saveButton, confirmLabel);
         SetButtonLabel(_cancelButton, "CANCEL");
+
+        SetAccent(_saveButton, ModAccents.Danger);
+        SetAccent(_cancelButton, Color.white);
 
         if (_saveButton != null) _saveButton.gameObject.SetActive(true);
         if (_discardButton != null) _discardButton.gameObject.SetActive(false);
@@ -180,6 +188,12 @@ public sealed class ModsConfirmPopup : MonoBehaviour
     {
         if (button?.SecondaryGraphic is TextMeshProUGUI text)
             text.text = label;
+    }
+
+    private static void SetAccent(DefaultButton button, Color color)
+    {
+        if (button != null)
+            ModAccents.Apply(button.gameObject, color);
     }
 
     private void Choose(Action action)

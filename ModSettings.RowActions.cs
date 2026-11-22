@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using BepInEx.Configuration;
 using MycoMenuLib;
+using Pigeon.UI;
 using UnityEngine;
 
 namespace MycoModConfig;
@@ -95,7 +96,7 @@ public static partial class ModSettings
         }
     }
 
-    private const string ReadOnlyNote = "<color=#FFB347>Read-only: edit this value in the mod's config file.</color>";
+    private const string ReadOnlyNote = "<color=#" + ModAccents.WarningHex + ">Read-only: edit this value in the mod's config file.</color>";
 
     private static void AddReadOnlyNote(ModInputField input)
     {
@@ -136,11 +137,19 @@ public static partial class ModSettings
 
         var revert = ModUI.AddRowAction(control, GetRevertIcon(), 0, () => view.DiscardEntry(entry));
         if (revert != null)
+        {
+            ModAccents.Apply(revert, ModAccents.Warning);
+            if (revert.GetComponent<DefaultButton>() is { } revertButton)
+                revertButton.SetHoverColor(ModAccents.Hover(ModAccents.Warning));
             view.RegisterRevertButton(entry, revert);
+        }
 
         var reset = ModUI.AddRowAction(control, GetResetIcon(), 1, () => ResetEntry(entry, view));
-        if (reset != null)
-            view.RegisterResetButton(entry, reset);
+        if (reset == null) return;
+        ModAccents.Apply(reset, ModAccents.Danger);
+        if (reset.GetComponent<DefaultButton>() is { } resetButton)
+            resetButton.SetHoverColor(ModAccents.Hover(ModAccents.Danger));
+        view.RegisterResetButton(entry, reset);
     }
 
     private static T Buffered<T>(ConfigEntry<T> entry, ModsView view)
